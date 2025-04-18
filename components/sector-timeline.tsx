@@ -69,9 +69,9 @@ export function SectorTimeline({
     return new Intl.DateTimeFormat("en-US", {
       month: "short",
       day: "numeric",
-      hour: "numeric",
+      hour: "2-digit",
       minute: "2-digit",
-      hour12: true,
+      hour12: false,
     }).format(dateObj)
   }
 

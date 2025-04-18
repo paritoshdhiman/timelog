@@ -148,44 +148,25 @@ export function EditOperationModal({
 
   if (!operation || !editedOperation) return null
 
-  const formatDateTimeLocal = (dateStr: string | null | undefined) => {
-    if (!dateStr) return ""
-
-    // Parse the ISO string to a Date object
-    const date = new Date(dateStr)
-    if (isNaN(date.getTime())) return ""
-
-    // Format to YYYY-MM-DDThh:mm format required by datetime-local input
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, "0")
-    const day = String(date.getDate()).padStart(2, "0")
-    const hours = String(date.getHours()).padStart(2, "0")
-    const minutes = String(date.getMinutes()).padStart(2, "0")
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`
-  }
+  const formatDateTimeLocal = (dateStr: string | undefined) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    return date.toISOString().slice(0, 16);
+  };
 
   const handleSave = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
+    if (!editedOperation) return;
 
-    const updatedOperation: Operation = {
-      id: editedOperation.id,
-      wellId: editedOperation.wellId,
-      type: editedOperation.type,
-      startTime: editedOperation.startTime,
-      endTime: editedOperation.endTime,
-      stage: editedOperation.stage,
-      sector: editedOperation.sector,
-      party: editedOperation.party,
-      mainEvent: editedOperation.mainEvent,
-      completed: editedOperation.completed,
-      personnel: projectPersonnel,
-      completionType: editedOperation.completionType
-    }
+    const savedOperation: Operation = {
+      ...editedOperation,
+      personnel,
+      stage: editedOperation.stage || undefined
+    };
 
-    onSave(updatedOperation)
-    onClose()
-  }
+    onSave(savedOperation);
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

@@ -12,19 +12,11 @@ export function ProjectInfoCard({ projectNumber, projectName, basin, crew }: Pro
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle className="text-xl bg-gradient-to-r from-red-600 to-rose-500 bg-clip-text text-transparent">
-          Project Information
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Project: {projectNumber}</h3>
-            {projectName && (
-              <p className="text-muted-foreground">{projectName}</p>
-            )}
-          </div>
-          <div className="flex gap-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-xl bg-gradient-to-r from-red-600 to-rose-500 bg-clip-text text-transparent">
+            {projectName}
+          </CardTitle>
+          <div className="flex gap-2">
             <Badge variant="outline" className="text-sm py-1 px-3">
               Basin: {basin}
             </Badge>
@@ -33,7 +25,7 @@ export function ProjectInfoCard({ projectNumber, projectName, basin, crew }: Pro
             </Badge>
           </div>
         </div>
-      </CardContent>
+      </CardHeader>
     </Card>
   )
-} 
+}

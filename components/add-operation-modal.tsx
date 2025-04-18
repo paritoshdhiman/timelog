@@ -12,7 +12,6 @@ import { type Operation, type Well, type CompletionType, type SectorType, OPERAT
 import { v4 as uuidv4 } from "uuid"
 import { Toggle } from "@/components/ui/toggle"
 import { CheckCircle2 } from "lucide-react"
-import { PersonnelSelector } from "@/components/personnel-selector"
 import { useToast } from "@/components/ui/use-toast"
 
 interface AddOperationModalProps {
@@ -72,9 +71,26 @@ export function AddOperationModal({
     return items.filter(item => getName(item).toLowerCase().includes(lowerQuery))
   }
 
+  const formatDateTimeLocal = (date: Date) => {
+    // Ensure we're working with a Date object
+    const d = new Date(date);
+    // Set seconds and milliseconds to 0 for consistency
+    d.setSeconds(0);
+    d.setMilliseconds(0);
+    
+    // Format in YYYY-MM-DDThh:mm format (24-hour)
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
   const [startTime, setStartTime] = useState(() => {
-    const now = new Date()
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+    const now = new Date();
+    return formatDateTimeLocal(now);
   })
 
   const [operationRows, setOperationRows] = useState<OperationRow[]>([
@@ -118,16 +134,14 @@ export function AddOperationModal({
 
   // Update all operation rows when start time changes
   const updateStartTimeForAllRows = (newStartTime: string) => {
-    const date = new Date(newStartTime)
-    if (!isNaN(date.getTime())) {
-      setStartTime(newStartTime)
-      setOperationRows(rows => 
-        rows.map(row => ({
-          ...row,
-          startTime: date
-        }))
-      )
-    }
+    const newDate = new Date(newStartTime);
+    setStartTime(formatDateTimeLocal(newDate));
+    setOperationRows(rows => 
+      rows.map(row => ({
+        ...row,
+        startTime: newDate
+      }))
+    );
   }
 
   // Filter wells and sectors based on configuration
@@ -223,8 +237,9 @@ export function AddOperationModal({
         personnel: projectPersonnel,
         mainEvent: row.mainEvent,
         stage: row.stageNumber || undefined,
-        completionType: row.completionType,
-        party: row.party
+        completionType: selectedCompletionType,
+        party: row.party,
+        comments: row.comments
       }
 
       // Find operations that need to be ended based on sector changes
@@ -282,7 +297,7 @@ export function AddOperationModal({
         if (!open) {
           onClose()
           const now = new Date()
-          const formattedNow = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+          const formattedNow = formatDateTimeLocal(now)
           setStartTime(formattedNow)
           setOperationRows([{ 
             id: uuidv4(), 
@@ -320,8 +335,14 @@ export function AddOperationModal({
                 id="startTime"
                 type="datetime-local"
                 value={startTime}
-                onChange={(e) => updateStartTimeForAllRows(e.target.value)}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    const date = new Date(e.target.value);
+                    updateStartTimeForAllRows(e.target.value);
+                  }
+                }}
                 className="w-[300px]"
+                step="60"
               />
               <p className="text-sm text-muted-foreground">
                 This will also become the end time for any previous operation on the selected sector.

@@ -20,6 +20,8 @@ import { ProjectInfoCard } from "@/components/project-info-card"
 import { SectorTimeline } from "@/components/sector-timeline"
 import { OldTimelineTable } from "@/components/old-timeline-table"
 import { EditOperationModal } from "@/components/edit-operation-modal"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { ChevronDown, ChevronRight } from "lucide-react"
 
 // Load state from localStorage
 const loadState = () => {
@@ -74,6 +76,7 @@ export default function Home() {
   const [selectedWellId, setSelectedWellId] = useState<string | null>(null)
   const [selectedSector, setSelectedSector] = useState<SectorType | null>(null)
   const [editingOperation, setEditingOperation] = useState<Operation | null>(null)
+  const [isPersonnelExpanded, setIsPersonnelExpanded] = useState(true);
 
   // Load saved state on mount
   useEffect(() => {
@@ -420,107 +423,125 @@ export default function Home() {
             </Button>
           </div>
           <div className="mb-6">
-            <Card className="p-4 border-red-600/20">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label>Engineer</Label>
-                  <Select
-                    value={projectPersonnel.engineer}
-                    onValueChange={(value) => setProjectPersonnel(prev => ({ ...prev, engineer: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Engineer" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {configuration.personnel.engineers.map((name) => (
-                        <SelectItem key={name} value={name}>
-                          {name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Pump Operator</Label>
-                  <Select
-                    value={projectPersonnel.pumpOperator}
-                    onValueChange={(value) => setProjectPersonnel(prev => ({ ...prev, pumpOperator: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Pump Operator" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {configuration.personnel.pumpOperators.map((name) => (
-                        <SelectItem key={name} value={name}>
-                          {name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Supervisor</Label>
-                  <Select
-                    value={projectPersonnel.supervisor}
-                    onValueChange={(value) => setProjectPersonnel(prev => ({ ...prev, supervisor: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Supervisor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {configuration.personnel.supervisors.map((name) => (
-                        <SelectItem key={name} value={name}>
-                          {name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Customer Rep</Label>
-                  <Select
-                    value={projectPersonnel.customerRep}
-                    onValueChange={(value) => setProjectPersonnel(prev => ({ ...prev, customerRep: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Customer Rep" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {configuration.personnel.customerReps.map((name) => (
-                        <SelectItem key={name} value={name}>
-                          {name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            <Collapsible 
+              open={isPersonnelExpanded} 
+              onOpenChange={setIsPersonnelExpanded}
+              defaultOpen={true}
+            >
+              <div className="flex items-center gap-2 py-2 cursor-pointer w-full">
+                <CollapsibleTrigger className="flex items-center gap-2">
+                  {isPersonnelExpanded ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4" />
+                  )}
+                  <h3 className="text-sm font-medium">Personnel Selection</h3>
+                </CollapsibleTrigger>
               </div>
+              <CollapsibleContent>
+                <Card className="p-4 border-red-600/20">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="space-y-2">
+                      <Label>Engineer</Label>
+                      <Select
+                        value={projectPersonnel.engineer}
+                        onValueChange={(value) => setProjectPersonnel(prev => ({ ...prev, engineer: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Engineer" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {configuration.personnel.engineers.map((name) => (
+                            <SelectItem key={name} value={name}>
+                              {name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-              <div className="mt-4">
-                <div className="space-y-2">
-                  <Label>Completion Type</Label>
-                  <Select
-                    value={selectedCompletionType || "none"}
-                    onValueChange={(value: CompletionType | "none") => setSelectedCompletionType(value === "none" ? undefined : value as CompletionType)}
-                  >
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="Select Completion Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      {COMPLETION_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </Card>
+                    <div className="space-y-2">
+                      <Label>Pump Operator</Label>
+                      <Select
+                        value={projectPersonnel.pumpOperator}
+                        onValueChange={(value) => setProjectPersonnel(prev => ({ ...prev, pumpOperator: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Pump Operator" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {configuration.personnel.pumpOperators.map((name) => (
+                            <SelectItem key={name} value={name}>
+                              {name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Supervisor</Label>
+                      <Select
+                        value={projectPersonnel.supervisor}
+                        onValueChange={(value) => setProjectPersonnel(prev => ({ ...prev, supervisor: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Supervisor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {configuration.personnel.supervisors.map((name) => (
+                            <SelectItem key={name} value={name}>
+                              {name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Customer Rep</Label>
+                      <Select
+                        value={projectPersonnel.customerRep}
+                        onValueChange={(value) => setProjectPersonnel(prev => ({ ...prev, customerRep: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Customer Rep" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {configuration.personnel.customerReps.map((name) => (
+                            <SelectItem key={name} value={name}>
+                              {name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="space-y-2">
+                      <Label>Completion Type</Label>
+                      <Select
+                        value={selectedCompletionType || "none"}
+                        onValueChange={(value: CompletionType | "none") => setSelectedCompletionType(value === "none" ? undefined : value as CompletionType)}
+                      >
+                        <SelectTrigger className="w-[200px]">
+                          <SelectValue placeholder="Select Completion Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          {COMPLETION_TYPES.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </Card>
+              </CollapsibleContent>
+            </Collapsible>
           </div>
 
           {operations.length > 0 ? (
