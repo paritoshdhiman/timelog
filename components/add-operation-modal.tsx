@@ -227,27 +227,34 @@ export function AddOperationModal({
         party: row.party
       }
 
-      // Find the last operation in the same sector or PAD operations that need to be ended
-      const lastOperations = existingOperations
+      // Find operations that need to be ended based on sector changes
+      const operationsToEnd = existingOperations
         .filter(op => {
-          // For PAD operations, we want to end them when any new operation is added
+          // Must not have an end time already
+          if (op.endTime) return false;
+          
+          // Must be before the new operation
+          if (new Date(op.startTime) >= new Date(row.startTime)) return false;
+
+          // For PAD operations, they end when any new operation starts
           if (op.sector === "PAD") {
-            return true
+            return true;
           }
-          // For regular sectors, only end operations in the same sector
-          return op.sector === row.sector
+          
+          // For regular sectors (A/B/C/D), only end when:
+          // 1. New operation is in the same sector, OR
+          // 2. New operation is a PAD operation
+          return op.sector === row.sector || row.sector === "PAD";
         })
         .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
 
       // Update end times for relevant operations
-      lastOperations.forEach(lastOp => {
-        if (!lastOp.endTime) {
-          const lastOpIndex = existingOperations.findIndex(op => op.id === lastOp.id)
-          if (lastOpIndex !== -1) {
-            existingOperations[lastOpIndex] = {
-              ...lastOp,
-              endTime: row.startTime.toISOString()
-            }
+      operationsToEnd.forEach(op => {
+        const opIndex = existingOperations.findIndex(existing => existing.id === op.id)
+        if (opIndex !== -1) {
+          existingOperations[opIndex] = {
+            ...op,
+            endTime: row.startTime.toISOString()
           }
         }
       })

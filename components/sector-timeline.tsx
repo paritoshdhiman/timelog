@@ -119,11 +119,19 @@ export function SectorTimeline({
 
   // Group operations by time
   const groupOperationsByTime = (operations: Operation[]) => {
+    // Deduplicate operations by ID
+    const uniqueOperations = operations.reduce((acc, operation) => {
+      if (!acc.find(op => op.id === operation.id)) {
+        acc.push(operation)
+      }
+      return acc
+    }, [] as Operation[])
+
     const groups: { startTime: string; operations: Operation[] }[] = []
     let currentGroup: Operation[] = []
     let currentTime: string | null = null
 
-    operations.forEach((op) => {
+    uniqueOperations.forEach((op) => {
       if (!currentTime) {
         currentTime = op.startTime
         currentGroup = [op]

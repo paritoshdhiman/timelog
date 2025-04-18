@@ -22,9 +22,17 @@ interface TimelineProps {
 // Helper function to group operations by time period
 const groupOperationsByTime = (operations: Operation[]) => {
   const timeGroups: { [key: string]: Operation[] } = {}
+  
+  // Deduplicate operations by ID
+  const uniqueOperations = operations.reduce((acc, operation) => {
+    if (!acc.find(op => op.id === operation.id)) {
+      acc.push(operation)
+    }
+    return acc
+  }, [] as Operation[])
 
   // Sort operations by start time
-  const sortedOperations = [...operations].sort((a, b) => 
+  const sortedOperations = [...uniqueOperations].sort((a, b) => 
     new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
   )
 

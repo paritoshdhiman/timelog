@@ -262,15 +262,31 @@ export default function Home() {
         new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
       )
 
-      // Update end times based on sector changes and PAD events
-      return sortedOperations.map((op, index) => {
-        // If this is the last operation, keep its current end time
-        if (index === sortedOperations.length - 1) return op
-
-        const nextOp = sortedOperations[index + 1]
-
-        // Always set end time when there's a next operation
-        return { ...op, endTime: nextOp.startTime }
+      // Update end times based on sector rules
+      return sortedOperations.map(op => {
+        // Find the next operation that should end this operation
+        const nextOperation = sortedOperations
+          .filter(next => {
+            // Must be after current operation
+            if (new Date(next.startTime) <= new Date(op.startTime)) return false;
+            
+            // For PAD operations, end when any new operation starts
+            if (op.sector === "PAD") {
+              return true;
+            }
+            
+            // For regular sectors (A/B/C/D), only end when:
+            // 1. Next operation in same sector starts, OR
+            // 2. A PAD operation starts
+            return next.sector === op.sector || next.sector === "PAD";
+          })
+          .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];
+        
+        return {
+          ...op,
+          endTime: nextOperation ? nextOperation.startTime : undefined,
+          completionType: op.completionType
+        }
       })
     })
     setIsAddModalOpen(false)
@@ -283,28 +299,34 @@ export default function Home() {
         op.id === editedOperation.id ? { ...editedOperation, completionType: editedOperation.completionType } : op
       )
 
-      // Sort operations by well and start time
-      const sortedOperations = updatedOperations.sort((a, b) => {
-        if (a.wellId !== b.wellId) return a.wellId.localeCompare(b.wellId)
-        return new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-      })
+      // Sort all operations by start time
+      const sortedOperations = updatedOperations.sort((a, b) => 
+        new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+      )
 
-      // Group operations by well
-      const wellOperations: { [wellId: string]: Operation[] } = {}
-      sortedOperations.forEach(op => {
-        if (!wellOperations[op.wellId]) wellOperations[op.wellId] = []
-        wellOperations[op.wellId].push(op)
-      })
-
-      // Update end times for each well's operations
+      // Update end times based on sector rules
       return sortedOperations.map(op => {
-        const wellOps = wellOperations[op.wellId]
-        const opIndex = wellOps.findIndex(o => o.id === op.id)
-        const nextOp = opIndex < wellOps.length - 1 ? wellOps[opIndex + 1] : null
+        // Find the next operation that should end this operation
+        const nextOperation = sortedOperations
+          .filter(next => {
+            // Must be after current operation
+            if (new Date(next.startTime) <= new Date(op.startTime)) return false;
+            
+            // For PAD operations, end when any new operation starts
+            if (op.sector === "PAD") {
+              return true;
+            }
+            
+            // For regular sectors (A/B/C/D), only end when:
+            // 1. Next operation in same sector starts, OR
+            // 2. A PAD operation starts
+            return next.sector === op.sector || next.sector === "PAD";
+          })
+          .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];
         
         return {
           ...op,
-          endTime: nextOp ? nextOp.startTime : undefined,
+          endTime: nextOperation ? nextOperation.startTime : undefined,
           completionType: op.completionType
         }
       })

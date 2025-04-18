@@ -75,12 +75,16 @@ export function EditOperationModal({
         // Filter operations that occurred after this one
         if (new Date(op.startTime) <= new Date(operation.startTime)) return false;
         
-        // For PAD sector, any sector change will end the operation
+        // Business Logic for PAD Sector:
+        // - PAD operations end when any new operation starts
         if (operation.sector === "PAD") {
           return true;
         }
         
-        // For other sectors, only same sector or PAD will end the operation
+        // Business Logic for Other Sectors (A, B, C, D, etc.):
+        // - Sector-specific operations end when:
+        //   1. The next operation in the same sector starts, OR
+        //   2. A PAD operation starts
         return op.sector === operation.sector || op.sector === "PAD";
       })
       .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];
@@ -94,7 +98,7 @@ export function EditOperationModal({
     }
   }, [operation.id, operation.startTime, operation.sector, existingOperations]);
 
-  const calculateEndTime = (newStartTime: string | undefined, newSector: string | undefined) => {
+  const calculateEndTime = (newStartTime: string | undefined, newSector: SectorType | undefined) => {
     // Return undefined if either parameter is undefined
     if (!newStartTime || !newSector) return undefined;
 
@@ -104,12 +108,16 @@ export function EditOperationModal({
         // Filter operations that occurred after the new start time
         if (new Date(op.startTime) <= new Date(newStartTime)) return false;
         
-        // For PAD sector, any sector change will end the operation
+        // Business Logic for PAD Sector:
+        // - PAD operations end when any new operation starts
         if (newSector === "PAD") {
           return true;
         }
         
-        // For other sectors, only same sector or PAD will end the operation
+        // Business Logic for Other Sectors (A, B, C, D, etc.):
+        // - Sector-specific operations end when:
+        //   1. The next operation in the same sector starts, OR
+        //   2. A PAD operation starts
         return op.sector === newSector || op.sector === "PAD";
       })
       .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];

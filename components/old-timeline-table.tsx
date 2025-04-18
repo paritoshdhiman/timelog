@@ -18,8 +18,16 @@ export function OldTimelineTable({
   configuration,
   onEditOperation
 }: OldTimelineTableProps) {
+  // Deduplicate operations by ID
+  const uniqueOperations = operations.reduce((acc, operation) => {
+    if (!acc.find(op => op.id === operation.id)) {
+      acc.push(operation)
+    }
+    return acc
+  }, [] as Operation[])
+
   // Sort operations by start time (newest first)
-  const sortedOperations = [...operations].sort((a, b) => {
+  const sortedOperations = [...uniqueOperations].sort((a, b) => {
     const aTime = new Date(a.startTime).getTime()
     const bTime = new Date(b.startTime).getTime()
     return bTime - aTime
@@ -126,6 +134,7 @@ export function OldTimelineTable({
               <TableHead className="w-[120px]">Pump Operator</TableHead>
               <TableHead className="w-[120px]">Supervisor</TableHead>
               <TableHead className="w-[120px]">Customer Rep</TableHead>
+              <TableHead>Operation</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Sector</TableHead>
               <TableHead>Well</TableHead>
@@ -157,6 +166,9 @@ export function OldTimelineTable({
                   <TableCell className={operation.type === "NPT/DT" ? "bg-red-100" : ""}>
                     {operation.type}
                   </TableCell>
+                  <TableCell>
+                    {operation.completionType || "-"}
+                  </TableCell>
                   <TableCell style={{ backgroundColor: sectorBgColor }}>
                     {operation.sector || "-"}
                   </TableCell>
@@ -169,7 +181,7 @@ export function OldTimelineTable({
                   <TableCell className={operation.completed ? "bg-green-100" : ""}>
                     {operation.completed ? "Yes" : "No"}
                   </TableCell>
-                  <TableCell style={{ backgroundColor: sectorBgColor }}>
+                  <TableCell>
                     {formatDateTime(operation.startTime)}
                   </TableCell>
                   <TableCell>
